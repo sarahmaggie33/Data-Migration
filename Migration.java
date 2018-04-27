@@ -18,7 +18,7 @@ public class Migration {
 	static final String USER = "ERICSOSM5070";
 	static final String PASS = "KWPI9MDP";
 	
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws FileNotFoundException, SQLException {
 		Connection conn = null;
 		Statement stmt = null;
 		ResultSet rs = null;
@@ -101,7 +101,29 @@ public class Migration {
 //
 //		} catch (SQLException sqle) {
 //			sqle.printStackTrace();
+//		} finally {
+//		try{
+//			if(rs != null) {
+//				rs.close();
+//			}
+//		} catch(SQLException sqle) {
+//			sqle.printStackTrace();
 //		}
+//		try {
+//			if (stmt != null) {
+//				stmt.close();
+//			}	
+//		} catch (SQLException sqle) {
+//			sqle.printStackTrace();
+//		}
+//		try {
+//			if (conn != null) {
+//				conn.close();
+//			}	
+//		} catch (SQLException sqle) {
+//			sqle.printStackTrace();
+//		}
+//	}
 //	}
 ////////////////////////////////////////////////////////////////////	
 ////////////////////////////////////////////////////////////////////
@@ -110,6 +132,24 @@ public class Migration {
 			conn = DriverManager.getConnection(DB_URL, USER, PASS);
 			
 			stmt = conn.createStatement();
+			
+			// feature_county_seq sequence 
+//			stmt.executeUpdate("CREATE SEQUENCE feature_county_seq START WITH 1 INCREMENT BY 1");
+			
+			// feature_county table
+			// there are issues with this.. something is not unique 
+//			String query2 = "SELECT DISTINCT county_numeric, county_name FROM Features_Master";
+//			rs = stmt.executeQuery(query2);
+//			while (rs.next()) {
+//				int county_numeric = rs.getInt("county_numeric");
+//				String county_name = rs.getString("county_name");
+//				String sqlInsertIntoFeatureCounty = "INSERT INTO feature_county (county_id, county_numeric, county_name) VALUES (feature_county_seq.nextval, ?, ?)";
+//				PreparedStatement preparedStatement3 = conn.prepareStatement(sqlInsertIntoFeatureCounty);
+//				preparedStatement3.setInt(1, county_numeric);
+//				preparedStatement3.setString(2, county_name);
+//				preparedStatement3.executeUpdate();
+//			}			
+			
 			
 			// feature_state table
 //			String query = "SELECT DISTINCT state_numeric, state_alpha FROM Features_Master";
@@ -123,87 +163,83 @@ public class Migration {
 //				preparedStatement2.setString(2, state_alpha);
 //				preparedStatement2.executeUpdate();
 //			}
+			
+//			stmt.executeUpdate("CREATE SEQUENCE feature_county_state_seq START WITH 1 INCREMENT BY 1");
+			
+			// feature_county_state table
+			String query7 = "SELECT county_id FROM feature_county UNION SELECT state_numeric FROM feature_state";
+			rs = stmt.executeQuery(query7);
+			while (rs.next()) {
+				int state_numeric = rs.getInt("state_numeric");
+				int county_id = rs.getInt("county_id");
+				String sqlInsertIntoFeatureCountyState = "INSERT INTO feature_county_state (county_state_id, state_numeric, county_id) VALUES (feature_county_state_seq.nextval, ?, ?)";
+				PreparedStatement preparedStatement2 = conn.prepareStatement(sqlInsertIntoFeatureCountyState);
+				preparedStatement2.setInt(1, state_numeric);
+				preparedStatement2.setInt(2, county_id);
+				preparedStatement2.executeUpdate();
+			}
+			
 
 			
-			// feature_county table
-			// there is issues with this.. something is not unique 
-//			String query2 = "SELECT DISTINCT county_numeric, county_name, state_numeric FROM Features_Master";
-//			rs = stmt.executeQuery(query2);
-//			while (rs.next()) {
-//				int county_numeric = rs.getInt("county_numeric");
-//				String county_name = rs.getString("county_name");
-//				int state_numeric = rs.getInt("state_numeric");
-//				String sqlInsertIntoFeatureCounty = "INSERT INTO feature_county (county_numeric, county_name, state_numeric) VALUES (?, ?, ?)";
-//				PreparedStatement preparedStatement3 = conn.prepareStatement(sqlInsertIntoFeatureCounty);
-//				preparedStatement3.setInt(1, county_numeric);
-//				preparedStatement3.setString(2, county_name);
-//				preparedStatement3.setInt(3, state_numeric);
-//				preparedStatement3.executeUpdate();
-//			}
-			
 			// feature_info table
-			// ERROR: parent key not found
-//			String query3 = "SELECT DISTINCT feature_id, feature_name, feature_class, state_numeric, county_numeric, map_name, elev_in_ft, date_created FROM Features_Master";
+			// ERROR: parent key not found, since county table is not done
+//			String query3 = "SELECT feature_id, feature_name, feature_class, county_state_id, map_name, elev_in_ft, date_created FROM Features_Master, feature_county_state";
 //			rs = stmt.executeQuery(query3);
 //			while (rs.next()) {
 //				int feature_id = rs.getInt("feature_id");
 //				String feature_name = rs.getString("feature_name");
 //				String feature_class = rs.getString("feature_class");
-//				int state_numeric = rs.getInt("state_numeric");
-//				int county_numeric = rs.getInt("county_numeric");
+//				String county_state_id = rs.getString("county_state_id");
 //				String map_name = rs.getString("map_name");
 //				int elev_in_ft = rs.getInt("elev_in_ft");
 //				String date_created = rs.getString("date_created");
-//				String sqlInsertIntoFeatureInfo = "INSERT INTO feature_info (feature_id, feature_name, feature_class, state_numeric, county_numeric, map_name, elev_in_ft, date_created) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+//				String sqlInsertIntoFeatureInfo = "INSERT INTO feature_info (feature_id, feature_name, feature_class, county_state_id, map_name, elev_in_ft, date_created) VALUES (?, ?, ?, ?, ?, ?, ?)";
 //				PreparedStatement preparedStatement4 = conn.prepareStatement(sqlInsertIntoFeatureInfo);
 //				preparedStatement4.setInt(1, feature_id);
 //				preparedStatement4.setString(2, feature_name);
 //				preparedStatement4.setString(3, feature_class);
-//				preparedStatement4.setInt(4, state_numeric);
-//				preparedStatement4.setInt(5, county_numeric);
-//				preparedStatement4.setString(6, map_name);
-//				preparedStatement4.setInt(7, elev_in_ft);
-//				preparedStatement4.setString(8, date_created);
+//				preparedStatement4.setString(4, county_state_id);
+//				preparedStatement4.setString(5, map_name);
+//				preparedStatement4.setInt(6, elev_in_ft);
+//				preparedStatement4.setString(7, date_created);
 //				preparedStatement4.executeUpdate();
-			
+//			}
 			// feature_date_seq sequence 
-			stmt.executeUpdate("CREATE SEQUENCE feature_date_seq MINVAL 1 START WITH 1 INCREMENT BY 1");
+//			stmt.executeUpdate("CREATE SEQUENCE feature_date_seq START WITH 1 INCREMENT BY 1");
 		
 			//feature_date table
-			String query3 = "SELECT DISTINCT feature_date_id, feature_id FROM Features_Master";
-			rs = stmt.executeQuery(query3);
-			while (rs.next()) {
-				int feature_date_id = rs.getInt("feature_date_id");
-				int feature_id = rs.getInt("feature_id"); 
-				String date_edited = rs.getString("date_edited");
-				String sqlInsertIntoFeatureDate = "INSERT INTO feature_date (feature_date_id, feature_id, date_edited) VALUES (?, ?, ?)";
-				PreparedStatement preparedStatement6 = conn.prepareStatement(sqlInsertIntoFeatureDate);
-				preparedStatement6.setInt(1, feature_date_id);
-				preparedStatement6.setInt(2, feature_id);
-				preparedStatement6.setString(3, date_edited); //date_edited can be null
-				preparedStatement6.executeUpdate();
-			}
-			
+			// needs feature_info table to work before it can work
+//			String query3 = "SELECT feature_date_seq.nextval, feature_id, date_edited FROM Features_Master, DUAL";
+//			rs = stmt.executeQuery(query3);
+//			while (rs.next()) {
+//				int feature_id = rs.getInt("feature_id"); 
+//				String date_edited = rs.getString("date_edited");
+//				String sqlInsertIntoFeatureDate = "INSERT INTO feature_date (feature_date_id, feature_id, date_edited) VALUES (feature_date_seq.nextval, ?, ?)";
+//				PreparedStatement preparedStatement6 = conn.prepareStatement(sqlInsertIntoFeatureDate);
+//				preparedStatement6.setInt(1, feature_id);
+//				preparedStatement6.setString(2, date_edited); //date_edited can be null
+//				preparedStatement6.executeUpdate();
+//			}
+//			
 			// feature_source_seq sequence
-			stmt.executeUpdate("CREATE SEQUENCE feature_source_seq MINVAL 1 START WITH 1 INCREMENT BY 1");
+//			stmt.executeUpdate("CREATE SEQUENCE feature_source_seq START WITH 1 INCREMENT BY 1");
 			
 			// feature_source table
-			String query4 = "SELECT DISTINCT feature_source_id, feature_id, source_lat_dms, source_long_dms FROM Features_Master";
-			rs = stmt.executeQuery(query4);
-			while (rs.next()) {
-				int feature_source_id = rs.getInt("feature_source_id");
-				int feature_id = rs.getInt("feature_id"); 
-				String source_lat_dms = rs.getString("source_lat_dms");
-				String source_long_dms = rs.getString("source_long_dms");
-				
-				String sqlInsertIntoFeatureSource = "INSERT INTO feature_source (feature_source_id, feature_id, source_lat_dms, source_long_dms) VALUES (?, ?, ?, ?)";
-				PreparedStatement preparedStatement8 = conn.prepareStatement(sqlInsertIntoFeatureSource);
-				preparedStatement8.setInt(1, feature_source_id);
-				preparedStatement8.setInt(2, feature_id);
-				preparedStatement8.setString(3, source_lat_dms);
-				preparedStatement8.setString(4, source_long_dms);
-				preparedStatement8.executeUpdate();
-			}
+			// needs other tables before it can work
+//			String query4 = "SELECT feature_source_seq.nextval, feature_id, source_lat_dms, source_long_dms FROM Features_Master, DUAL";
+//			rs = stmt.executeQuery(query4);
+//			while (rs.next()) {
+//				int feature_id = rs.getInt("feature_id"); 
+//				String source_lat_dms = rs.getString("source_lat_dms");
+//				String source_long_dms = rs.getString("source_long_dms");
+//				
+//				String sqlInsertIntoFeatureSource = "INSERT INTO feature_source (feature_source_id, feature_id, source_lat_dms, source_long_dms) VALUES (feature_source_seq.nextval, ?, ?, ?)";
+//				PreparedStatement preparedStatement8 = conn.prepareStatement(sqlInsertIntoFeatureSource);
+//				preparedStatement8.setInt(1, feature_id);
+//				preparedStatement8.setString(2, source_lat_dms);
+//				preparedStatement8.setString(3, source_long_dms);
+//				preparedStatement8.executeUpdate();
+//			}
 			//source_lat_dms can be null
 			//source_long_dms can be null
 			
@@ -235,6 +271,28 @@ public class Migration {
 			
 		} catch (SQLException sqle) {
 			sqle.printStackTrace();
+		} finally {
+			try{
+				if(rs != null) {
+					rs.close();
+				}
+			} catch(SQLException sqle) {
+				sqle.printStackTrace();
+			}
+			try {
+				if (stmt != null) {
+					stmt.close();
+				}	
+			} catch (SQLException sqle) {
+				sqle.printStackTrace();
+			}
+			try {
+				if (conn != null) {
+					conn.close();
+				}	
+			} catch (SQLException sqle) {
+				sqle.printStackTrace();
+			}
 		}
 	
 	
@@ -242,3 +300,4 @@ public class Migration {
 
 	}
 }
+
