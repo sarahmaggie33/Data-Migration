@@ -1,9 +1,8 @@
 DROP TABLE feature_source;
 DROP TABLE feature_date;
 DROP TABLE feature_info;
---DROP TABLE feature_county_state;
-DROP TABLE feature_county;
-DROP TABLE feature_state;
+DROP TABLE feature_county cascade constraints;
+DROP TABLE feature_state cascade constraints;
 
 CREATE TABLE feature_state (
 state_numeric NUMBER PRIMARY KEY, 
@@ -15,13 +14,6 @@ state_numeric NUMBER
 REFERENCES feature_state(state_numeric),
 county_name VARCHAR2(30),
 CONSTRAINT county_id PRIMARY KEY (county_numeric, state_numeric));
-
---CREATE TABLE feature_county_state (
---county_state_id NUMBER PRIMARY KEY,
---county_id NUMBER 
---REFERENCES feature_county(county_id),
---state_numeric NUMBER
---REFERENCES feature_state(state_numeric));
 
 
 CREATE TABLE feature_info (
