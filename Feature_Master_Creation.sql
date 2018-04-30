@@ -1,0 +1,22 @@
+DROP TABLE features_master;
+CREATE TABLE Features_Master
+(feature_id number(25),
+feature_name varchar2(120),
+feature_class varchar2(70),
+state_alpha varchar2(2),
+state_numeric number(38),
+county_name varchar2(70),
+county_numeric number(38),
+primary_lat_dms varchar2(70),
+prim_long_dms varchar2(70),
+prim_lat_dec number,
+prim_long_dec number,
+source_lat_dms varchar2(70),
+source_long_dms varchar2(70),
+source_lat_dec number,
+source_long_dec number,
+elev_in_m number(38),
+elev_in_ft number(38),
+map_name varchar2(70),
+date_created varchar2(70),
+date_edited varchar2(70));
