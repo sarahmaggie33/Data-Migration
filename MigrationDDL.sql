@@ -18,7 +18,7 @@ CONSTRAINT county_id PRIMARY KEY (county_numeric, state_numeric));
 
 CREATE TABLE feature_info (
 feature_id NUMBER PRIMARY KEY, 
-feature_name VARCHAR2(50), 
+feature_name VARCHAR2(100), 
 feature_class VARCHAR2(50),
 state_numeric NUMBER
 REFERENCES feature_state(state_numeric),
